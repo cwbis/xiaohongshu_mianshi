@@ -139,3 +139,33 @@ python -m unittest test_local_app_server.py
 cd d:\codex\demo_xiaohongshu
 npm run build
 ```
+
+## 功能巡检
+
+日常改动后建议依次检查：
+
+```powershell
+cd d:\codex\demo_xiaohongshu
+npm run build
+python -m unittest test_local_app_server.py
+python local_app_server.py
+```
+
+然后访问：
+- `http://127.0.0.1:8080`
+- `http://127.0.0.1:8080/api/health`
+
+需要人工确认的页面路径：
+- 采集页：搜索表单、刷新、翻页、候选详情、勾选入库
+- 帖子库：公司导航、岗位筛选、卡片网格、详情弹层、删除、载入草稿
+- 分析页：规则分析报告、典型问题、专题题库入口
+- 大模型页：供应商、模型、Base URL、API Key 和生成答案入口
+
+## 图片加载说明
+
+小红书图片可能因为 `coverUrl` 缺失、链接过期或外链限制加载失败。当前前端已经做了降级处理：
+- 无图片或图片失败时，采集候选卡片显示占位封面
+- 帖子库卡片显示小红书风格占位封面
+- 详情页图片失败时仍保留视觉区域和正文滚动阅读
+
+本项目暂不默认启用后端图片代理，避免引入开放代理和第三方图片缓存风险。

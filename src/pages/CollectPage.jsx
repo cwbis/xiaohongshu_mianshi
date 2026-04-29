@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { PlaceholderCover } from "../components/LibraryNote.jsx";
 import { getNoteDetail, searchPosts } from "../api/xhs.js";
 import { buildPostFromSearchItem, truncateText } from "../domain/posts.js";
 
@@ -167,7 +169,7 @@ export function CollectPage({ form, setForm, xhsConfig, setXhsConfig, collect, s
                     </div>
                     <div className="search-card-body">
                       <div className="search-card-media">
-                        {item.coverUrl ? <img src={item.coverUrl} alt={item.title} /> : <div className="search-card-placeholder">OS</div>}
+                        <CandidateImage item={item} company={form.company} />
                       </div>
                       <div className="search-card-content">
                         <h4>{item.title}</h4>
@@ -204,7 +206,7 @@ export function CollectPage({ form, setForm, xhsConfig, setXhsConfig, collect, s
               </button>
             </div>
             <div className="detail-drawer-body">
-              {collect.activeCandidate.coverUrl && <img className="detail-drawer-cover" src={collect.activeCandidate.coverUrl} alt="" />}
+              <CandidateDetailImage item={collect.activeCandidate} company={form.company} />
               <div className="detail-drawer-content">{collect.activeCandidate.content || collect.activeCandidate.excerpt || "暂无正文"}</div>
             </div>
             <div className="actions">
@@ -216,5 +218,61 @@ export function CollectPage({ form, setForm, xhsConfig, setXhsConfig, collect, s
         </>
       )}
     </>
+  );
+}
+
+function CandidateImage({ item, company }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const src = item.coverUrl || "";
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
+
+  if (src && !imageFailed) {
+    return (
+      <img
+        src={src}
+        alt={item.title}
+        referrerPolicy="no-referrer"
+        loading="lazy"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="search-card-placeholder rich">
+      <strong>{company || "OfferScope"}</strong>
+      <span>{src ? "图片加载失败" : "暂无图片"}</span>
+    </div>
+  );
+}
+
+function CandidateDetailImage({ item, company }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const src = item.coverUrl || "";
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
+
+  if (src && !imageFailed) {
+    return (
+      <img
+        className="detail-drawer-cover"
+        src={src}
+        alt={item.title || ""}
+        referrerPolicy="no-referrer"
+        loading="lazy"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="detail-drawer-cover fallback-cover">
+      <PlaceholderCover post={item} company={company || item.company || "OfferScope"} reason={src ? "图片加载失败" : "暂无图片"} />
+    </div>
   );
 }

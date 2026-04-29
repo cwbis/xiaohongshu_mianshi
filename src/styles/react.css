@@ -17,6 +17,7 @@
   object-fit: cover;
 }
 
+.library-note-cover.has-image,
 .library-note-cover:has(.react-note-image) {
   padding: 0;
 }
@@ -39,6 +40,38 @@
 
 .answer-list {
   padding-left: 22px;
+}
+
+.search-card-placeholder.rich {
+  align-content: center;
+  gap: 8px;
+  padding: 18px;
+  text-align: center;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.64) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.64) 1px, transparent 1px),
+    linear-gradient(135deg, #fff1f3, #fffaf6);
+  background-size: 24px 24px, 24px 24px, auto;
+}
+
+.search-card-placeholder.rich strong {
+  display: block;
+  color: var(--brand);
+  font-size: 1.2rem;
+  letter-spacing: 0;
+}
+
+.search-card-placeholder.rich span {
+  color: var(--muted);
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 0.92rem;
+  letter-spacing: 0;
+}
+
+.detail-drawer-cover.fallback-cover {
+  overflow: hidden;
+  padding: 0;
+  background: transparent;
 }
 
 @media (max-width: 820px) {

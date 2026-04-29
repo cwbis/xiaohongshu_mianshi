@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { inferCompany, inferRole, normalizeDateLabel, truncateText } from "../domain/posts.js";
 
 const palette = [
@@ -11,6 +12,7 @@ export function LibraryNote({ post, index = 0, onOpen }) {
   const [bg, accent, text] = palette[index % palette.length];
   const sizeClass = index % 5 === 0 ? "tall" : index % 3 === 0 ? "compact" : "regular";
   const company = inferCompany(post);
+
   return (
     <article
       className={`library-note-card ${sizeClass}`}
@@ -38,25 +40,44 @@ export function LibraryNote({ post, index = 0, onOpen }) {
             <p>{normalizeDateLabel(post.publishTime || post.collectedAt)}</p>
           </div>
         </div>
-        <span className="library-note-detail-trigger">♡ {post.likeCount || 0}</span>
+        <span className="library-note-detail-trigger">喜欢 {post.likeCount || 0}</span>
       </div>
     </article>
   );
 }
 
 export function Cover({ post, company }) {
-  if (post.coverUrl) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const src = post.coverUrl || "";
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
+
+  if (src && !imageFailed) {
     return (
-      <div className="library-note-cover">
-        <img src={post.coverUrl} alt={post.title} className="react-note-image" />
+      <div className="library-note-cover has-image">
+        <img
+          src={src}
+          alt={post.title}
+          className="react-note-image"
+          referrerPolicy="no-referrer"
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+        />
       </div>
     );
   }
+
+  return <PlaceholderCover post={post} company={company} reason={src ? "图片加载失败" : "暂无图片"} />;
+}
+
+export function PlaceholderCover({ post, company, reason = "暂无图片" }) {
   return (
     <div className="library-note-cover">
       <div className="library-note-cover-top">
         <span>Notes</span>
-        <span>{post.noteTypeLabel || "图文"}</span>
+        <span>{post.noteTypeLabel || reason}</span>
       </div>
       <div className="library-note-cover-body">
         <span className="library-note-company-chip">{company}</span>

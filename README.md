@@ -1,9 +1,9 @@
-﻿# OfferScope 小红书面经分析台
+# OfferScope 小红书面经分析台
 
-OfferScope 是一个面向求职场景的本地分析工作台，支持“小红书候选帖子采集 + 本地帖子库 + 规则分析 + 大模型总结”。
+OfferScope 是一个面向求职场景的本地分析工作台，支持“一键拉取小红书面经 + 本地帖子库 + 规则分析 + 大模型总结”。
 
 如果后续要整体重构项目，先看这份梳理文档：
-- [docs/project-refactor-guide.md](/d:/codex/demo_xiaohongshu/docs/project-refactor-guide.md)
+- [docs/project-refactor-guide.md](docs/project-refactor-guide.md)
 
 当前版本已经支持：
 - React + Vite 前端工作台，生产构建后由本地 Python 服务直接托管
@@ -27,7 +27,7 @@ npm run build
 ### 方式一：桌面启动器
 
 推荐直接双击：
-- [start_offerscope.cmd](/d:/codex/demo_xiaohongshu/start_offerscope.cmd)
+- [start_offerscope.cmd](start_offerscope.cmd)
 
 它会：
 1. 启动本地后端服务
@@ -36,7 +36,7 @@ npm run build
 4. 在退出时关闭后端服务
 
 对应 Python 启动器：
-- [desktop_launcher.py](/d:/codex/demo_xiaohongshu/desktop_launcher.py)
+- [desktop_launcher.py](desktop_launcher.py)
 
 说明：
 - 桌面运行入口依赖 `pywebview`
@@ -78,13 +78,15 @@ Vite 已配置 `/api` 代理到 `http://127.0.0.1:8080`。
 当前版本不再依赖浏览器 `localStorage` 作为主存储。
 
 默认数据文件位置：
-- [data/offerscope.db](/d:/codex/demo_xiaohongshu/data/offerscope.db)
+- `data/offerscope.db`
 
 存储内容包括：
 - 帖子库
 - `xhsConfig`
 - `llmConfig`
 - schema 版本与迁移元数据
+
+注意：`data/*.db` 已被 `.gitignore` 排除，不会提交到 GitHub。
 
 ## 帖子库浏览方式
 

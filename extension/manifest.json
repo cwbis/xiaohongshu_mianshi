@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "OfferScope Xiaohongshu Collector",
+  "version": "0.1.0",
+  "description": "Capture the current Xiaohongshu post page into a reusable JSON record for OfferScope.",
+  "permissions": ["activeTab", "clipboardWrite", "scripting", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://www.xiaohongshu.com/*",
+    "https://edith.xiaohongshu.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "http://[::1]/*"
+  ],
+  "action": {
+    "default_title": "OfferScope Collector",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.xiaohongshu.com/*",
+        "https://edith.xiaohongshu.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "http://[::1]/*"
+      ],
+      "js": ["page-bridge.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

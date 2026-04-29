@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Local data and runtime files
+data/*.db
+data/*.db-*
+*.log
+*.err
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Tooling caches
+.vite/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.codex/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

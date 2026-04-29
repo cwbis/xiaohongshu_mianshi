@@ -1,0 +1,37 @@
+# managed-local-runtime Specification
+
+## Purpose
+TBD - created by archiving change replace-localstorage-with-lite-db-and-autostart-service. Update Purpose after archive.
+## Requirements
+### Requirement: 本地运行时自动启动服务
+系统 SHALL 提供一种受支持的运行方式，在用户进入 UI 前自动启动本地后端服务。
+
+#### Scenario: 无需终端命令即可启动应用
+- **WHEN** 用户打开受支持的桌面运行入口
+- **THEN** 运行时自动启动本地后端服务，而不要求用户手动执行 shell 命令
+
+#### Scenario: 仅在后端健康后展示主界面
+- **WHEN** 运行时启动应用
+- **THEN** 它在展示主工作流 UI 之前验证后端健康检查接口已经可用
+
+### Requirement: 运行时清晰暴露启动失败
+系统 SHALL 在后端启动失败时向用户提供清晰提示，而不是让 UI 进入看似可用但实际损坏的状态。
+
+#### Scenario: 启动时出现依赖或端口错误
+- **WHEN** 后端因缺少依赖、端口被占用或运行时异常而启动失败
+- **THEN** 运行时展示明确的启动错误信息，而不是打开一个误导性的“已就绪”界面
+
+### Requirement: 保留现有开发兜底启动方式
+系统 SHALL 保留一个可文档化的兜底启动路径，供开发和故障恢复场景使用。
+
+#### Scenario: 使用兜底本地服务命令
+- **WHEN** 开发者选择不使用托管运行时
+- **THEN** 现有本地服务启动方式仍然可用，并作为兜底工作流写入文档
+
+### Requirement: 托管运行时退出时清理后台服务
+系统 SHALL 在托管运行时正常退出时，清理其启动的后台服务线程或进程。
+
+#### Scenario: 关闭桌面运行时窗口
+- **WHEN** 用户关闭托管运行时窗口
+- **THEN** 运行时会干净地关闭后端服务，避免留下孤儿后台进程
+

@@ -1,0 +1,22 @@
+schema: spec-driven
+
+context: |
+  项目名称：OfferScope / demo_xiaohongshu
+  技术栈：原生前端 JavaScript + Python 本地服务
+  文档约定：OpenSpec 产物默认使用简体中文编写。
+  保留英文的范围：代码标识符、API 路径、文件名、命令名、数据库字段名。
+  风格约定：表达清晰、简洁、面向实现，优先使用中文标题、中文说明、中文任务描述。
+
+rules:
+  proposal:
+    - 使用简体中文撰写全部说明性内容。
+    - capability 标识符保持 kebab-case 英文，但说明文字使用中文。
+  design:
+    - 使用简体中文撰写全部说明性内容。
+    - 涉及接口、路径、表名、字段名时保留原始英文标识。
+  specs:
+    - 规范正文、场景说明使用简体中文。
+    - Requirement 标题可以使用中文；规范关键字 SHALL、WHEN、THEN 按模板保留。
+  tasks:
+    - 任务描述使用简体中文。
+    - 勾选框格式必须严格保持 `- [ ]`，编号格式保持不变。

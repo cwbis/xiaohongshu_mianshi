@@ -74,7 +74,7 @@
 
 #### Scenario: 开发者验证前端构建
 - **WHEN** 开发者运行前端检查或构建命令
-- **THEN** 系统能发现 React 源码语法、类型或构建错误
+- **THEN** 系统能够发现 React 源码语法、类型或构建错误
 
 #### Scenario: 开发者验证本地服务
 - **WHEN** 开发者运行 `python -m unittest test_local_app_server.py`
@@ -89,8 +89,78 @@
 
 #### Scenario: 开发者查看根目录
 - **WHEN** 开发者查看项目根目录的前端入口文件
-- **THEN** 系统保留 `index.html`、`src/main.jsx` 和 React 源码结构作为当前前端入口，不再保留旧 `app.js` 作为备用入口
+- **THEN** 系统保留 `index.html`、`src/main.jsx` 和 React 源码结构作为当前前端入口
 
 #### Scenario: 发布仓库后复现运行
 - **WHEN** 新环境克隆 GitHub 仓库并按 README 运行
 - **THEN** 系统通过 `npm install`、`npm run build` 和 `python local_app_server.py` 启动 React 版本应用
+
+### Requirement: 帖子图片加载失败时保持可浏览
+系统 SHALL 在帖子图片缺失、过期或加载失败时显示稳定的占位封面，且不破坏采集候选卡片、帖子库卡片或详情页布局。
+
+#### Scenario: 采集候选图片加载失败
+- **WHEN** 采集候选结果包含不可访问的 `coverUrl`
+- **THEN** 系统在候选卡片中显示占位封面，并保留标题、作者、发布时间和入库操作
+
+#### Scenario: 帖子库卡片图片加载失败
+- **WHEN** 已入库帖子图片加载失败
+- **THEN** 系统在帖子库卡片中显示占位封面，并保留公司、岗位、标题和交互信息
+
+#### Scenario: 详情页图片加载失败
+- **WHEN** 用户打开帖子详情且图片不可访问
+- **THEN** 系统显示占位视觉区域和完整正文内容，详情页仍可滚动和关闭
+
+### Requirement: 图片加载问题可诊断
+系统 SHALL 提供足够的运行时信号，帮助判断图片失败来自空 URL、远端拒绝、网络错误还是前端展示逻辑。
+
+#### Scenario: 图片 URL 为空
+- **WHEN** 帖子没有 `coverUrl`
+- **THEN** 系统直接显示占位封面，不发起无效图片请求
+
+#### Scenario: 图片请求失败
+- **WHEN** 浏览器触发图片加载错误
+- **THEN** 系统将该图片标记为失败状态，并在当前卡片或详情页展示降级视觉
+
+### Requirement: 图片代理保持可选
+系统 SHALL 仅在确认外链限制影响主要浏览体验时新增本地图像代理能力，且代理能力必须限制协议、超时和响应类型。
+
+#### Scenario: 不需要图片代理
+- **WHEN** 前端降级已能满足浏览体验
+- **THEN** 系统不新增后端图片代理接口
+
+#### Scenario: 需要图片代理
+- **WHEN** 多数有效图片因外链限制无法在浏览器直接显示
+- **THEN** 系统可以新增受限的 `/api/image-proxy` 能力，并确保非图片内容或非法 URL 被拒绝
+
+### Requirement: React 前端提供面试 Agent 页面
+系统 SHALL 在现有 React 前端中新增“面试 Agent”页面，用于提问、查看分类、查看检索来源、阅读结构化回答和继续追问。
+
+#### Scenario: 进入面试 Agent 页面
+- **WHEN** 用户从应用导航进入“面试 Agent”
+- **THEN** 系统展示问题输入区、回答区、上下文来源区和追问入口
+
+#### Scenario: 发送首次问题
+- **WHEN** 用户输入面试问题并点击生成
+- **THEN** 前端调用 `/api/agent/answer`，并展示知识领域、标签、回答结构和来源列表
+
+#### Scenario: 继续追问
+- **WHEN** 用户在已有回答后输入追问
+- **THEN** 前端调用追问接口并将回复追加到当前会话中
+
+### Requirement: 面试 Agent 复用现有帖子库和模型配置
+系统 SHALL 让面试 Agent 使用当前本地帖子库、公司/岗位上下文和大模型配置。
+
+#### Scenario: 使用现有大模型配置
+- **WHEN** 用户已经在大模型页面配置供应商、模型、Base URL 和 API Key
+- **THEN** 面试 Agent 使用同一份本地配置发起回答请求
+
+#### Scenario: 使用公司和岗位过滤
+- **WHEN** 用户在帖子库中选择了公司或岗位范围
+- **THEN** 面试 Agent 可以将该范围作为检索上下文过滤条件
+
+### Requirement: 回答展示适合复习
+系统 SHALL 以适合面试复习的方式展示 Agent 回答。
+
+#### Scenario: 展示结构化回答
+- **WHEN** Agent 返回回答结果
+- **THEN** 前端展示一句话总结、分点回答、项目落地、易错点、可能追问和来源列表

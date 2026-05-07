@@ -1,8 +1,11 @@
 # local-persistent-store Specification
 
 ## Purpose
-TBD - created by archiving change replace-localstorage-with-lite-db-and-autostart-service. Update Purpose after archive.
+
+定义 OfferScope 本地持久化能力，包括帖子、配置、旧数据迁移，以及面试知识 Agent 相关的存储与检索索引。
+
 ## Requirements
+
 ### Requirement: 后端托管帖子持久化
 系统 SHALL 将 OfferScope 的帖子记录保存到后端托管的轻量数据库中，而不是继续依赖浏览器 `localStorage` 作为长期存储。
 
@@ -15,7 +18,7 @@ TBD - created by archiving change replace-localstorage-with-lite-db-and-autostar
 - **THEN** 前端通过后端持久化 API 写入更新后的集合，且后端以事务方式保存标准化后的记录
 
 ### Requirement: 后端托管配置持久化
-系统 SHALL 将应用的长期配置（包括 `xhsConfig` 和 `llmConfig`）保存到后端托管数据库中。
+系统 SHALL 将应用的长期配置，包括 `xhsConfig` 和 `llmConfig`，保存到后端托管数据库中。
 
 #### Scenario: 按 scope 加载已保存配置
 - **WHEN** 前端在 bootstrap 阶段请求长期配置
@@ -47,3 +50,35 @@ TBD - created by archiving change replace-localstorage-with-lite-db-and-autostar
 - **WHEN** 前端向本地服务请求 bootstrap 数据
 - **THEN** 后端返回单个响应，其中包含已保存帖子、已保存配置以及启动所需的存储元数据
 
+### Requirement: 持久化面试知识 Agent 数据
+系统 SHALL 在现有 SQLite 数据库中保存面试题目、知识点、Agent 会话和消息历史，且不得破坏现有帖子和设置数据。
+
+#### Scenario: 初始化 Agent 数据表
+- **WHEN** 本地服务启动且数据库缺少 Agent 相关表
+- **THEN** 系统自动创建题目、知识点、会话、消息和必要索引表
+
+#### Scenario: 保留现有数据
+- **WHEN** 系统执行数据库初始化或迁移
+- **THEN** 现有 `posts`、`settings` 和存储元数据保持可读可写
+
+### Requirement: 支持本地全文检索索引
+系统 SHALL 使用 SQLite FTS5 或兼容降级方案为帖子、题目和知识点提供本地全文检索能力。
+
+#### Scenario: 构建全文索引
+- **WHEN** 帖子、题目或知识点被新增或更新
+- **THEN** 系统更新对应全文检索索引
+
+#### Scenario: FTS5 不可用
+- **WHEN** 当前 SQLite 环境不支持 FTS5
+- **THEN** 系统降级为普通关键词检索，并向运行日志记录降级原因
+
+### Requirement: 保存 Agent 会话历史
+系统 SHALL 将每次 Agent 问答保存为本地会话历史，支持后续追问和复盘。
+
+#### Scenario: 保存首次问题
+- **WHEN** 用户发起新的 Agent 问答
+- **THEN** 系统创建会话记录并保存用户问题、分类结果、回答结果和来源上下文
+
+#### Scenario: 保存追问消息
+- **WHEN** 用户在已有会话中继续追问
+- **THEN** 系统追加用户消息和 Agent 回复，不覆盖原始问题与上一轮回答

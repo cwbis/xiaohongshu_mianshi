@@ -42,9 +42,11 @@ def main() -> int:
     controller = create_server_controller(DEFAULT_PORT)
     try:
         controller.start()
-        wait_for_health()
+        port = controller.server.server_address[1]
+        wait_for_health(f"http://127.0.0.1:{port}/api/health")
         webview = require_webview()
-        window = webview.create_window("OfferScope", APP_URL, width=1440, height=960)
+        app_url = f"http://127.0.0.1:{port}"
+        window = webview.create_window("OfferScope", app_url, width=1440, height=960)
         webview.start()
         return 0 if window else 0
     except Exception as error:

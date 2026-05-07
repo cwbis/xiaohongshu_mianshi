@@ -1,22 +1,39 @@
 # OfferScope 小红书面经分析台
 
-OfferScope 是一个面向求职场景的本地分析工作台，支持“一键拉取小红书面经 + 本地帖子库 + 规则分析 + 大模型总结”。
+OfferScope 是一个面向求职场景的本地分析工作台，支持：
 
-如果后续要整体重构项目，先看这份梳理文档：
+- 通过本地 Python/FastAPI 服务调用小红书搜索与详情能力
+- 在前端候选池中筛选帖子，再手动入库
+- 基于本地帖子库做规则分析、专题题库整理和大模型总结
+- 使用“面试 Agent”进行问题分类、上下文检索、结构化回答和追问
+- 将帖子、配置、知识索引和会话历史持久化到本地 SQLite
+
+如果你在继续推进架构演进，建议先看：
 - [docs/project-refactor-guide.md](docs/project-refactor-guide.md)
 
-当前版本已经支持：
-- React + Vite 前端工作台，生产构建后由本地 Python 服务直接托管
-- 通过本地 Python 服务调用小红书搜索与详情能力
-- 直接搜索小红书帖子、刷新当前结果、继续加载更多候选内容
-- 将帖子库、`xhsConfig`、`llmConfig` 持久化到本地 SQLite 数据库
-- 在帖子库中按公司、岗位分组浏览帖子，并在分组内继续管理帖子
-- 首次启动时把旧版浏览器 `localStorage` 数据自动迁移到 SQLite
-- 生成关键词统计、常见问题、流程观察和 Markdown 报告
+## 技术栈
 
-## 默认启动方式
+- 前端：React 19 + Vite
+- 本地后端：FastAPI + Uvicorn
+- 存储：SQLite
+- 小红书采集能力：`XhsSkills-master/skills/xhs-apis`
 
-如果是第一次拉起 React 版本，先安装并构建前端：
+## 目录概览
+
+```text
+demo_xiaohongshu/
+├─ backend/                 # FastAPI 应用、路由、服务、仓储
+├─ src/                     # React 前端
+├─ data/                    # 本地 SQLite 数据文件
+├─ XhsSkills-master/        # 小红书技能运行时
+├─ local_app_server.py      # 兼容启动入口
+├─ desktop_launcher.py      # 桌面启动器
+└─ start_offerscope.cmd     # Windows 双击启动脚本
+```
+
+## 安装依赖
+
+先安装前端依赖并构建：
 
 ```powershell
 cd d:\codex\demo_xiaohongshu
@@ -24,92 +41,101 @@ npm install
 npm run build
 ```
 
+再安装 Python 依赖：
+
+```powershell
+cd d:\codex\demo_xiaohongshu
+python -m pip install -r requirements.txt
+```
+
+如果你需要桌面窗口模式，再安装：
+
+```powershell
+python -m pip install pywebview
+```
+
+如果你要直接调用小红书技能，还需要安装技能依赖：
+
+```powershell
+python -m pip install -r .\XhsSkills-master\skills\xhs-apis\scripts\requirements.txt
+cd .\XhsSkills-master\skills\xhs-apis\scripts
+npm install
+```
+
+## 启动方式
+
 ### 方式一：桌面启动器
 
-推荐直接双击：
+直接双击：
+
 - [start_offerscope.cmd](start_offerscope.cmd)
 
 它会：
-1. 启动本地后端服务
+
+1. 启动本地 FastAPI 服务
 2. 等待 `/api/health` 就绪
-3. 打开桌面运行入口
+3. 打开桌面窗口
 4. 在退出时关闭后端服务
 
-对应 Python 启动器：
-- [desktop_launcher.py](desktop_launcher.py)
-
-说明：
-- 桌面运行入口依赖 `pywebview`
-- 如果缺少依赖，可执行：`python -m pip install pywebview`
-
-## 开发兜底启动方式
-
-如果你只是运行构建后的本地应用，可以继续使用 Python 服务：
+### 方式二：仅启动本地服务
 
 ```powershell
 cd d:\codex\demo_xiaohongshu
 python local_app_server.py
 ```
 
-然后访问：
+默认地址：
+
 - `http://127.0.0.1:8080`
+- `http://127.0.0.1:8080/api/health`
 
-如果你要开发 React 页面，建议同时启动后端和 Vite：
+### 方式三：前后端联调开发
+
+启动后端：
 
 ```powershell
 cd d:\codex\demo_xiaohongshu
 python local_app_server.py
 ```
 
-另开一个终端：
+另开一个终端启动 Vite：
 
 ```powershell
 cd d:\codex\demo_xiaohongshu
 npm run dev
 ```
 
-然后访问 Vite 地址：
-- `http://127.0.0.1:5173`
+开发地址：
 
-Vite 已配置 `/api` 代理到 `http://127.0.0.1:8080`。
+- 前端：`http://127.0.0.1:5173`
+- 本地 API：`http://127.0.0.1:8080`
 
-## 数据存储说明
+## 数据存储
 
-当前版本不再依赖浏览器 `localStorage` 作为主存储。
+默认数据库文件：
 
-默认数据文件位置：
 - `data/offerscope.db`
 
-存储内容包括：
+其中保存：
+
 - 帖子库
 - `xhsConfig`
 - `llmConfig`
-- schema 版本与迁移元数据
+- 题目抽取结果
+- 知识点索引
+- Agent 会话与消息历史
+- schema 版本和迁移元数据
 
-注意：`data/*.db` 已被 `.gitignore` 排除，不会提交到 GitHub。
+`data/*.db` 已被 `.gitignore` 排除，不会默认提交到仓库。
 
-## 帖子库浏览方式
+## 主要接口
 
-帖子库页面现在按公司优先浏览：
-- 顶部公司导航：例如“美团”“腾讯”各自是一组
-- 公司内岗位标签：例如“本地商业平台”“后端开发实习”是公司下面的子方向
-- 内容区使用小红书式卡片网格，先横向填满，再向下延展
+### 健康检查
 
-帖子库中可以继续执行这些操作：
-- 查看详情
-- 载入草稿
-- 删除帖子
+- `GET /api/health`
 
-## 旧数据迁移
+### 本地存储
 
-如果你的浏览器里还有旧版 `localStorage` 数据：
-- 系统会在数据库为空且尚未完成迁移时自动尝试导入
-- 迁移成功后会清理旧版浏览器存储键
-- 后续读写统一走本地存储 API
-
-## 关键本地接口
-
-本地服务新增了这些持久化接口：
 - `GET /api/storage/bootstrap`
 - `GET /api/storage/posts`
 - `PUT /api/storage/posts`
@@ -118,20 +144,45 @@ Vite 已配置 `/api` 代理到 `http://127.0.0.1:8080`。
 - `PUT /api/storage/settings/llmConfig`
 - `POST /api/storage/import-local`
 
+### 小红书采集
+
+- `POST /api/xhs/search`
+- `POST /api/xhs/note-detail`
+
+### 面试 Agent
+
+- `POST /api/agent/classify`
+- `POST /api/agent/retrieve`
+- `POST /api/agent/answer`
+- `POST /api/agent/follow-up`
+- `GET /api/agent/sessions`
+- `GET /api/agent/sessions/{session_id}`
+
+## 前端页面
+
+- `采集`：关键词搜索、分页加载、候选池筛选、详情抽屉、手动入库
+- `帖子库`：按公司/岗位浏览帖子，查看全文，删除或载入草稿
+- `分析`：关键词统计、常见问题、专题题库、Markdown 报告
+- `大模型`：预设模型配置、问答和总结
+- `面试 Agent`：分类、检索、结构化回答、追问、历史会话
+
 ## 测试
 
-已增加基础 Python 测试，覆盖：
-- SQLite repository 初始化与去重逻辑
-- bootstrap payload
-- 旧数据导入
-- 本地服务健康检查与 bootstrap 接口
-
-运行方式：
+后端测试：
 
 ```powershell
 cd d:\codex\demo_xiaohongshu
 python -m unittest test_local_app_server.py
 ```
+
+这组测试覆盖：
+
+- SQLite repository 初始化与去重
+- bootstrap payload
+- 旧数据导入
+- 存储路由读写
+- XHS 路由兼容
+- Agent 基础分类接口
 
 前端构建检查：
 
@@ -140,32 +191,26 @@ cd d:\codex\demo_xiaohongshu
 npm run build
 ```
 
-## 功能巡检
-
-日常改动后建议依次检查：
+本地 smoke test 建议：
 
 ```powershell
 cd d:\codex\demo_xiaohongshu
-npm run build
-python -m unittest test_local_app_server.py
 python local_app_server.py
 ```
 
 然后访问：
+
 - `http://127.0.0.1:8080`
 - `http://127.0.0.1:8080/api/health`
 
-需要人工确认的页面路径：
-- 采集页：搜索表单、刷新、翻页、候选详情、勾选入库
-- 帖子库：公司导航、岗位筛选、卡片网格、详情弹层、删除、载入草稿
-- 分析页：规则分析报告、典型问题、专题题库入口
-- 大模型页：供应商、模型、Base URL、API Key 和生成答案入口
+## 兼容说明
 
-## 图片加载说明
+- `local_app_server.py` 仍然保留旧入口，历史命令可以继续使用
+- 首次启动时，如果检测到旧版 `localStorage` 数据，会尝试迁移到 SQLite
+- 前端默认通过 `/api` 与本地后端通信
 
-小红书图片可能因为 `coverUrl` 缺失、链接过期或外链限制加载失败。当前前端已经做了降级处理：
-- 无图片或图片失败时，采集候选卡片显示占位封面
-- 帖子库卡片显示小红书风格占位封面
-- 详情页图片失败时仍保留视觉区域和正文滚动阅读
+## 注意事项
 
-本项目暂不默认启用后端图片代理，避免引入开放代理和第三方图片缓存风险。
+- 小红书搜索和详情接口依赖有效的 cookies
+- 大模型回答依赖你在页面里配置的 API Key、Base URL 和模型名
+- 本项目默认不做代理图片缓存，封面图加载失败时前端会回退到占位图

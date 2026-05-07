@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Shell } from "../components/Shell.jsx";
 import { AnalysisPage } from "../pages/AnalysisPage.jsx";
+import { AgentPage } from "../pages/AgentPage.jsx";
 import { CollectPage } from "../pages/CollectPage.jsx";
 import { LibraryPage } from "../pages/LibraryPage.jsx";
 import { LLMPage } from "../pages/LLMPage.jsx";
@@ -18,7 +19,7 @@ import {
   readLegacyStorageSnapshot,
 } from "../domain/posts.js";
 
-const ROUTES = new Set(["collect", "library", "analysis", "llm"]);
+const ROUTES = new Set(["collect", "library", "analysis", "llm", "agent"]);
 
 export default function App() {
   const [route, setRouteState] = useState(readRoute());
@@ -123,7 +124,7 @@ export default function App() {
         <section className="panel">
           <h2>启动失败</h2>
           <p className="failed-box">{runtime.error}</p>
-          <p className="inline-hint">请确认 Python 本地服务已启动，或使用 README 中的启动脚本。</p>
+          <p className="inline-hint">请确认本地 Python 服务已经启动，或者使用 README 中更新后的启动方式。</p>
         </section>
       </div>
     );
@@ -168,6 +169,12 @@ export default function App() {
           llmState={llmState}
           setLLMState={setLLMState}
           analysis={analysis}
+        />
+      )}
+      {route === "agent" && (
+        <AgentPage
+          llmConfig={llmConfig}
+          filters={{ company: library.companyId, role: library.roleId }}
         />
       )}
     </Shell>
